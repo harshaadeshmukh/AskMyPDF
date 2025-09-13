@@ -34,70 +34,6 @@ st.markdown("""
 st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
 
 # Sidebar styling
-st.markdown(
-    """
-    <style>
-    /* Sidebar background */
-    [data-testid="stSidebar"] {
-        color: white;
-        padding-top: 20px;
-    }
-
-    /* Sidebar title */
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-        color: white;
-    }
-
-    /* Sidebar buttons (navigation) */
-    .sidebar-btn {
-        display: block;
-        padding: 10px 15px;
-        margin: 5px 0;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        color: white;
-        background-color: transparent;
-        border: 1px solid #374151; /* Dark border */
-        transition: 0.3s;
-    }
-
-    /* Hover effect */
-    .sidebar-btn:hover {
-        background-color: #1F2937; /* Dark Gray */
-        border: 1px solid #4B5563; /* Slightly lighter border on hover */
-    }
-
-    /* Active button */
-    .active-btn {
-        background-color: #000000; /* Black */
-        font-weight: 600;
-        border: 1px solid #6B7280; /* Highlighted dark border */
-    }
-
-    /* Responsive Title */
-    .responsive-title {
-        color: white;
-        font-size: 2.1rem; /* default desktop size */
-        font-weight: bold;
-    }
-    @media (max-width: 705px) {
-        .responsive-title {
-            font-size: 1.5rem; /* tablets */
-            padding: 0 10px;
-            word-wrap: break-word;
-        }
-    }
-    @media (max-width: 400px) {
-        .responsive-title {
-            font-size: 1.0rem; /* phones */
-            padding: 0 5px;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # Sidebar Header
 st.sidebar.markdown("<h2>📚 AskMyPDF</h2>", unsafe_allow_html=True)
@@ -105,7 +41,7 @@ st.sidebar.caption("Your AI-powered PDF assistant")
 
 # Initialize session state for navigation
 if "page" not in st.session_state:
-    st.session_state.page = " Home"
+    st.session_state.page = "🏠 Home"
 
 # Sidebar navigation
 
