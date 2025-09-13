@@ -1,8 +1,34 @@
-
 # home.py
 import streamlit as st
 import app  # your chatbot page
 import history
+
+# Inject global responsive font CSS
+st.markdown("""
+    <style>
+    html, body, [class^='css'] {
+        font-size: clamp(0.95rem, 2vw, 1.15rem);
+    }
+    h1, .stApp h1 {
+        font-size: clamp(2rem, 5vw, 2.5rem);
+    }
+    h2, .stApp h2 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+    }
+    h3, .stApp h3 {
+        font-size: clamp(1.2rem, 3vw, 1.5rem);
+    }
+    .stMarkdown, .stChatMessageContent, .stExpanderContent {
+        font-size: clamp(1rem, 2vw, 1.1rem);
+    }
+    .stTextInput>div>input, .stTextArea>div>textarea {
+        font-size: clamp(1rem, 2vw, 1.1rem);
+    }
+    button, .stButton>button {
+        font-size: clamp(1rem, 2vw, 1.1rem);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Set page config
 st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
@@ -167,8 +193,11 @@ if st.session_state.page == "🏠 Home":
         col1, col2 = st.columns(2)
         col1.info("✅ Use clear and specific questions for better answers.")
         col1.info("✅ Large PDFs may take a few seconds to process.")
-        col2.info("✅ Ensure text in PDFs is selectable (OCR needed for scanned images).")
+        col2.info("✅ Ensure text in PDFs is selectable.")
         col2.info("✅ Upload multiple PDFs to create a unified knowledge base.")
 
 elif st.session_state.page == "💬 Chatbot":
     app.run_chatbot()
+    
+elif st.session_state.page == "📜 History":
+    history.show_history_ui()

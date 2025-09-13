@@ -15,7 +15,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 
-
 # ---------------- Setup asyncio for Streamlit ----------------
 try:
     asyncio.get_running_loop()
@@ -149,21 +148,7 @@ def handle_special_keywords(user_question, conversation_history):
         return True, random.choice(compliment_responses)
     
     # ---------------- Special Creative Responses ----------------
-    elif "age" in user_question_lower or "old are you" in user_question_lower:
-        return True, "🤖 I'm as old as your latest PDF upload and as young as your next question! Age is just a number in the digital realm! ✨🔢"
-    
-    elif "birthday" in user_question_lower:
-        return True, "🎂 I celebrate my birthday every time you upload a new PDF! Each document gives me new life and purpose! 🎉📚"
-    
-    elif "favorite" in user_question_lower:
-        favorites = [
-            "📚 My favorite thing? Discovering hidden gems in your documents!",
-            "🔍 I love connecting dots between different parts of your PDFs!",
-            "💡 My favorite moments are when I help you find exactly what you need!",
-            "✨ I'm passionate about turning complex documents into simple conversations!"
-        ]
-        return True, random.choice(favorites)
-    
+
 
     # Special gratitude responses (enhanced from original)
     elif any(keyword in user_question_lower for keyword in ["thank you", "thanks", "dhanyavaad", "thank you so much", "great job"]):
@@ -214,7 +199,10 @@ def get_text_chunks(text):
     return splitter.split_text(text)
 
 def get_vector_store(chunks):
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    # Use cached embeddings if available
+    if 'embeddings' not in st.session_state:
+        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = st.session_state.embeddings
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
     return vector_store
@@ -243,17 +231,20 @@ Please explain in a friendly and easy-to-understand way. You can also add tips o
 def user_input(user_question, pdf_docs, conversation_history, api_key):
     # ---------------- Check for special keywords first ----------------
     should_handle, special_response = handle_special_keywords(user_question, conversation_history)
-    
     if should_handle:
-        # Save to history
-        conversation_history.append((user_question, special_response, "Assistant", 
-                                   datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ""))
-        
-        # Display chat messages
+        conversation_history.append((user_question, special_response, "Assistant", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ""))
         with st.chat_message("user", avatar="🧑"):
             st.markdown(user_question)
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(special_response)
+        # Always show download button for any special response
+        if len(conversation_history) > 0:
+            text_history = ""
+            for q, a, model, ts, pdf in conversation_history:
+                text_history += f"Question: {q}\nAnswer: {a}\nModel: {model}\nTimestamp: {ts}\nPDFs: {pdf}\n{'-'*50}\n"
+            b64 = base64.b64encode(text_history.encode()).decode()
+            st.sidebar.markdown(f'<a href="data:file/txt;base64,{b64}" download="conversation_history.txt">'
+                                f'<button style="background-color:#888; color:#fff; border:none; padding:8px 16px; border-radius:5px; cursor:pointer;">Download conversation history</button></a>', unsafe_allow_html=True)
         return
 
     # ---------------- Check API key ----------------
@@ -261,18 +252,29 @@ def user_input(user_question, pdf_docs, conversation_history, api_key):
         st.error("❌ Invalid or missing Google API key. Please enter a valid API key in the sidebar.")
         return
 
-    # ---------------- Original PDF handling code ----------------
+    # ---------------- PDF handling with caching ----------------
     if not pdf_docs:
         st.warning("⚠️ Please upload PDF files.")
         return
 
     try:
-        # Process PDFs
-        text_chunks = get_text_chunks(get_pdf_text(pdf_docs))
-        get_vector_store(text_chunks)
+        # Create a unique key for uploaded PDFs based on their names and sizes
+        pdf_key = tuple((pdf.name, pdf.size) for pdf in pdf_docs)
 
-        # Load vector DB
-        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # If PDFs changed, re-process and cache
+        if ('pdf_key' not in st.session_state or st.session_state.pdf_key != pdf_key):
+            text = get_pdf_text(pdf_docs)
+            text_chunks = get_text_chunks(text)
+            vector_store = get_vector_store(text_chunks)
+            st.session_state.pdf_key = pdf_key
+            st.session_state.text_chunks = text_chunks
+            st.session_state.vector_store = vector_store
+        else:
+            text_chunks = st.session_state.text_chunks
+            vector_store = st.session_state.vector_store
+
+        # Load vector DB from cache
+        embeddings = st.session_state.embeddings
         new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
         # Similarity search
@@ -287,8 +289,7 @@ def user_input(user_question, pdf_docs, conversation_history, api_key):
         pdf_names = [pdf.name for pdf in pdf_docs] if pdf_docs else []
 
         # Save history
-        conversation_history.append((user_question_output, response_output, "Google AI",
-                                     datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ", ".join(pdf_names)))
+        conversation_history.append((user_question_output, response_output, "Google AI", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ", ".join(pdf_names)))
 
         # Display chat messages
         with st.chat_message("user", avatar="🧑"):
@@ -323,10 +324,9 @@ def run_chatbot():
         st.session_state.user_api_key = ''
 
     # ---------------- Sidebar for API Key and File Upload ----------------
-    st.sidebar.header("🔧 Configuration")
-    
+    st.sidebar.markdown('<h3 style="font-size:23px; font-weight:600; margin-bottom:0;">🔧 Configuration</h3>', unsafe_allow_html=True)
     # API Key Section
-    st.sidebar.subheader("🔑 Google API Key")
+    st.sidebar.markdown('<h3 style="font-size:20px; font-weight:600; margin-bottom:0;">🔑 Google API Key</h3>', unsafe_allow_html=True)
     
     # Check if config API key exists and is valid
     config_api_key = ""
@@ -365,13 +365,19 @@ def run_chatbot():
         st.sidebar.success("✅ API key is ready")
     else:
         st.sidebar.error("❌ Please enter a valid Google API key")
-        st.sidebar.info("💡 Get your API key from: https://console.cloud.google.com/")
+        st.sidebar.info("💡 Get your API key from: https://aistudio.google.com/apikey")
         
+        
+    st.sidebar.markdown("---")
 
     # File Upload Section
-    st.sidebar.subheader("📁 Upload Files")
+   
+    st.sidebar.markdown('<h3 style="font-size:20px; font-weight:600; margin-bottom:0;">📁 Upload Files</h3>', unsafe_allow_html=True)
+
     pdf_docs = st.sidebar.file_uploader("Upload your PDFs", accept_multiple_files=True)
 
+    st.sidebar.markdown("---")
+    
     if st.sidebar.button("Process PDFs"):
         if not validate_api_key(api_key):
             st.sidebar.error("❌ Please enter a valid API key first")
@@ -380,11 +386,11 @@ def run_chatbot():
                 try:
                     chunks = get_text_chunks(get_pdf_text(pdf_docs))
                     get_vector_store(chunks)
-                    st.success("✅ PDFs processed successfully!")
+                    st.sidebar.success("✅ PDFs processed successfully!")
                 except Exception as e:
-                    st.error(f"❌ Error processing PDFs: {str(e)}")
+                    st.sidebar.error(f"❌ Error processing PDFs: {str(e)}")
         else:
-            st.warning("Please upload PDF files first.")
+            st.sidebar.warning("Please upload PDF files first.")
 
 
     # ---------------- Main Chat Interface ----------------
@@ -399,7 +405,6 @@ def run_chatbot():
                 
                 st.write(f"📄 PDFs: {pdf}")
                 st.write(f"⏰ {ts}")
-                st.write(f"⚡ Model: {model}")
 
     # Chat input
     user_question = st.chat_input("Ask a question about your PDFs...")
