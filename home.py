@@ -77,7 +77,6 @@ st.markdown(
 
     /* Responsive Title */
     .responsive-title {
-        text-align: center;
         color: white;
         font-size: 2.1rem; /* default desktop size */
         font-weight: bold;
@@ -106,27 +105,26 @@ st.sidebar.caption("Your AI-powered PDF assistant")
 
 # Initialize session state for navigation
 if "page" not in st.session_state:
-    st.session_state.page = "🏠 Home"
+    st.session_state.page = " Home"
 
 # Sidebar navigation
 
 pages = {
-    "🏠 Home": "",
-    "💬 Chatbot": "",
-    "📜 History": ""
+    "Home": "Home",
+    "Chatbot": "Chatbot",
+    "History": "History"
 }
 
-
-for icon, name in pages.items():
+for page, name in pages.items():
     if st.sidebar.button(
-        f"{icon} {name}",
-        key=icon,
+        page,
+        key=page,
         use_container_width=True
     ):
-        st.session_state.page = icon
+        st.session_state.page = page
 
 # ---------------- Render pages ----------------
-if st.session_state.page == "🏠 Home":
+if st.session_state.page == "Home":
     st.markdown(
         "<h1 class='responsive-title'>🏠 Welcome to AskMyPDF</h1>",
         unsafe_allow_html=True
@@ -196,8 +194,8 @@ if st.session_state.page == "🏠 Home":
         col2.info("✅ Ensure text in PDFs is selectable.")
         col2.info("✅ Upload multiple PDFs to create a unified knowledge base.")
 
-elif st.session_state.page == "💬 Chatbot":
+elif st.session_state.page == "Chatbot":
     app.run_chatbot()
     
-elif st.session_state.page == "📜 History":
+elif st.session_state.page == "History":
     history.show_history_ui()
