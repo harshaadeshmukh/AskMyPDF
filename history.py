@@ -93,3 +93,4 @@ def show_history_ui():
             f'</div>',
             unsafe_allow_html=True
         )
+
