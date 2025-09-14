@@ -3,6 +3,7 @@ import streamlit as st
 import app  # your chatbot page
 import history
 
+
 # Inject global responsive font CSS
 st.markdown("""
     <style>
@@ -30,18 +31,113 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Prompt for username at app start
+if "username" not in st.session_state or not st.session_state.username:
+
+    st.markdown("""
+        <style>
+        .modern-welcome-card {
+            background: linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%);
+            padding: 2.8rem 2.5rem 2.2rem 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px #6366f133;
+            max-width: 540px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modern-welcome-icon {
+            font-size: 3rem;
+            color: #6366f1;
+            text-shadow: 0 2px 8px #6366f133;
+        }
+        .modern-welcome-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #22223b;
+            margin-bottom: 0.1rem;
+            letter-spacing: 1px;
+        }
+        .modern-welcome-desc {
+            text-align: center;
+            font-size: 1.15rem;
+            color: #444;
+            margin-bottom: 1.7rem;
+        }
+        .modern-welcome-highlight {
+            color: #6366f1;
+            font-weight: 700;
+        }
+        .modern-welcome-input input {
+            width: 180px !important;
+            height: 28px !important;
+            font-size: 1rem !important;
+            padding: 4px 8px !important;
+            border-radius: 8px !important;
+            border: 1px solid #6366f1 !important;
+            box-shadow: 0 2px 8px #6366f122;
+        }
+        /* Custom style for Enter button only */
+        .stButton > button[data-testid="enter_btn"] {
+            background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px #6366f133;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+        .stButton > button[data-testid="enter_btn"]:hover {
+            background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+        }
+        </style>
+        <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:45vh;'>
+            <div class='modern-welcome-card'>
+                <div class='modern-welcome-icon'>📚</div>
+                <div class='modern-welcome-title'>Welcome to AskMyPDF</div>
+                <div class='modern-welcome-desc'>
+                    Please enter your name to personalize your chat experience.<br>
+                    <span class='modern-welcome-highlight'>Your chats will be saved separately.</span>
+                </div>
+    """, unsafe_allow_html=True)
+    # Place the textbox right after the description, inside the card
+    st.markdown("<div class='modern-welcome-input' style='width:100%;max-width:160px;margin:0 auto;padding:0;'>", unsafe_allow_html=True)
+    username = st.text_input("", "", key="username_input", placeholder="Please enter a unique name (e.g. John123)😊")
+    enter_pressed = st.button("Enter", key="enter_btn", use_container_width=True)
+    st.markdown("</div></div></div>", unsafe_allow_html=True)
+    # If user enters name and presses Enter (textbox) or clicks button, go to Home
+    if (enter_pressed or (username and username.strip())):
+        if username and username.strip():
+            st.session_state.username = username.strip()
+            st.session_state.page = "Home"
+            st.rerun()
+        else:
+            st.markdown("<div style='width:100%;max-width:160px;padding:0;'>", unsafe_allow_html=True)
+            st.warning("😅 Oops! Did you forget to enter your name? Please add a unique name to continue.")
+            st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
+
 # Set page config
 st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
 
-# Sidebar styling
 
 # Sidebar Header
+
 st.sidebar.markdown("<h2>📚 AskMyPDF</h2>", unsafe_allow_html=True)
-st.sidebar.caption("Your AI-powered PDF assistant")
+st.sidebar.markdown(f"<span style='font-size:1.1em;'>Your AI-powered PDF assistant<br><b>Hi, </b> {st.session_state.username} 😄</span>", unsafe_allow_html=True)
+
+# # Logout button
+# if st.sidebar.button("🚪 Logout", key="logout_btn", use_container_width=True):
+#     st.session_state.username = ""
+#     st.session_state.page = "Home"
+#     st.rerun()
 
 # Initialize session state for navigation
+
 if "page" not in st.session_state:
-    st.session_state.page = "Home"
+    st.session_state.page = "🏠 Home"
 
 # Sidebar navigation
 
@@ -58,6 +154,13 @@ for page, name in pages.items():
         use_container_width=True
     ):
         st.session_state.page = page
+
+# Logout button after History
+if st.sidebar.button("Logout", key="logout_btn", use_container_width=True):
+    st.session_state.username = ""
+    st.session_state.page = "Home"
+    st.session_state.conversation_history = []  # Clear chat history on logout
+    st.rerun()
 
 # ---------------- Render pages ----------------
 if st.session_state.page == "Home":
@@ -131,7 +234,7 @@ if st.session_state.page == "Home":
         col2.info("✅ Upload multiple PDFs to create a unified knowledge base.")
 
 elif st.session_state.page == "Chatbot":
-    app.run_chatbot()
+    app.run_chatbot(st.session_state.username)
     
 elif st.session_state.page == "History":
-    history.show_history_ui()
+    history.show_history_ui(st.session_state.username)
