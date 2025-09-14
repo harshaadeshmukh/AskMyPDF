@@ -130,7 +130,7 @@ Please explain in a friendly and easy-to-understand way. You can also add tips o
     return chain
 
 
-def user_input(user_question, pdf_docs, conversation_history, api_key):
+def user_input(user_question, pdf_docs, conversation_history, api_key, username):
     # ---------------- Check for special keywords first ----------------
     should_handle, special_response = handle_special_keywords(user_question, conversation_history)
     if should_handle:
@@ -139,7 +139,8 @@ def user_input(user_question, pdf_docs, conversation_history, api_key):
         add_chat(
             user_question, special_response, "Assistant",
             datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            ", ".join([pdf.name for pdf in pdf_docs]) if pdf_docs else ""
+            ", ".join([pdf.name for pdf in pdf_docs]) if pdf_docs else "",
+            username
         )
         with st.chat_message("user", avatar="🧑"):
             st.markdown(user_question)
@@ -202,7 +203,8 @@ def user_input(user_question, pdf_docs, conversation_history, api_key):
         add_chat(
             user_question_output, response_output, "Google AI",
             datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            ", ".join(pdf_names)
+            ", ".join(pdf_names),
+            username
         )
 
         # Display chat messages
@@ -229,11 +231,13 @@ def user_input(user_question, pdf_docs, conversation_history, api_key):
 
 
 # ---------------- Run Chatbot Page ----------------
-def run_chatbot():
+def run_chatbot(username):
     st.header("📚 Chat with multiple PDFs")
 
-    if 'conversation_history' not in st.session_state:
+    # Always keep chat history tied to username
+    if 'conversation_history' not in st.session_state or st.session_state.get('chat_user') != username:
         st.session_state.conversation_history = []
+        st.session_state.chat_user = username
     
     if 'user_api_key' not in st.session_state:
         st.session_state.user_api_key = ''
@@ -282,11 +286,7 @@ def run_chatbot():
     pdf_docs = st.sidebar.file_uploader("Upload your PDFs", accept_multiple_files=True)
     st.sidebar.markdown("---")
 
-    # Clear Chat Button
-    if st.sidebar.button("🧹 Clear Chat History"):
-        st.session_state.conversation_history = []
-        st.rerun()
-
+    # Process PDFs Button
     if st.sidebar.button("Process PDFs"):
         if not validate_api_key(api_key):
             st.sidebar.error("❌ Please enter a valid API key first")
@@ -311,11 +311,16 @@ def run_chatbot():
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(a)
             with st.expander("Details"):
-                
                 st.write(f"📄 PDFs: {pdf}")
                 st.write(f"⏰ {ts}")
 
     # Chat input
     user_question = st.chat_input("Ask a question about your PDFs...")
     if user_question:
-        user_input(user_question, pdf_docs, st.session_state.conversation_history, api_key)
+        user_input(user_question, pdf_docs, st.session_state.conversation_history, api_key, username)
+
+    # Show Clear Chat History button if there is any chat history
+    if len(st.session_state.conversation_history) > 0:
+        if st.button("🧹 Clear Chat"):
+            st.session_state.conversation_history = []
+            st.rerun()
