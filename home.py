@@ -41,7 +41,7 @@ st.sidebar.caption("Your AI-powered PDF assistant")
 
 # Initialize session state for navigation
 if "page" not in st.session_state:
-    st.session_state.page = "🏠 Home"
+    st.session_state.page = "Home"
 
 # Sidebar navigation
 
