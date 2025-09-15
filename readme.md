@@ -1,6 +1,6 @@
-# AskMyPDF-anything
+# AskMyPDF
 
-AskMyPDF-anything is a simple app that lets you talk to your PDF files. 
+AskMyPDF is a simple app that lets you talk to your PDF files. 
 Just upload one or more PDFs, ask a question in plain English, and the app will give you the answer. 
 It works by reading the content of your PDFs, finding the most relevant parts, and then using Google Gemini 2.5 Flash AI to generate accurate answers. 
 No more scrolling through hundreds of pages – just ask and get what you need!
@@ -30,7 +30,7 @@ No more scrolling through hundreds of pages – just ask and get what you need!
 ---
 
 ## ⚙️ How it Works (RAG Pipeline)
-AskMyPDF-anything uses a **Retrieval-Augmented Generation (RAG)** approach:
+AskMyPDF uses a **Retrieval-Augmented Generation (RAG)** approach:
 
 1. **PDF Ingestion** – Extract text from PDFs and split into smaller chunks.  
 2. **Embeddings** – Convert text chunks into numerical vectors using HuggingFace `all-MiniLM-L6-v2`.  
@@ -53,7 +53,7 @@ AskMyPDF-anything uses a **Retrieval-Augmented Generation (RAG)** approach:
 ---
 
 ## 🎥 Demo
-Here’s a quick demo of AskMyPDF-anything in action:
+Here’s a quick demo of AskMyPDF in action:
 
 <p align="center">
   <img src="assets/demo.gif" alt="demo" width="650"/>
@@ -65,8 +65,8 @@ Here’s a quick demo of AskMyPDF-anything in action:
 ## 🚦 Getting Started
 ### 1. Clone the Repository
 ```bash
-   git clone https://github.com/harshaadeshmukh/AskMyPDF-anything.git
-   cd AskMyPDF-anything
+   git clone https://github.com/harshaadeshmukh/AskMyPDF.git
+   cd AskMyPDF
 ```
 
 ### 2. Set Up the Environment:
@@ -93,7 +93,7 @@ streamlit run home.py
 
 ## 📂 Directory Structure
 ```
-AskMyPDF-anything/
+AskMyPDF/
 │
 ├── home.py           # Website landing page (opens first when you visit)
 ├── app.py            # Chatbot app (upload PDFs, ask questions, get answers)
