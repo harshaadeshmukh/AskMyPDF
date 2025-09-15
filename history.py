@@ -53,8 +53,6 @@ def clear_history(username):
     supabase.table(TABLE_NAME).delete().eq("username", username).execute()
 
 
-
-
 # -----------------------------
 # Streamlit UI
 # -----------------------------
@@ -76,6 +74,7 @@ def show_history_ui(username):
     if not dates:
         st.info("No chat dates found.")
         return
+
     # Use session_state to persist selected date
     if "selected_date" not in st.session_state or st.session_state["selected_date"] not in dates:
         st.session_state["selected_date"] = dates[-1]
@@ -94,43 +93,84 @@ def show_history_ui(username):
         st.markdown("---")
         chat_text += f"Question: {chat['question']}\nAnswer: {chat['answer']}\nModel: {chat['model']}\nTimestamp: {chat['timestamp']}\nPDFs: {chat['pdfs']}\n{'-'*50}\n"
 
-    # Download selected date’s chats (button in sidebar)
+    # -----------------------------
+    # Sidebar buttons (Download + Delete)
+    # -----------------------------
     if chat_text:
         b64 = base64.b64encode(chat_text.encode()).decode()
+        st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+        # Create columns for layout
+        col1, col2, col3 = st.sidebar.columns([1, 6, 1])
+
+        # Inject CSS (no glow now)
         st.sidebar.markdown(
-            f'<div style="text-align:center;">'
-            f'<a href="data:file/txt;base64,{b64}" download="chat_{username}_{selected_date}.txt">'
-                f'<button style="background-color:#888; background-color:green;margin-top :20px;border:none; padding:8px 16px; border-radius:7px; cursor:pointer; font-size:16px;margin-bottom:1px;">Download Chat History</button></a>'
-            f'</div>',
+            """
+            <style>
+            .stButton > button {
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                padding: 10px 16px !important;
+                transition: 0.3s !important;
+            }
+            </style>
+            """,
             unsafe_allow_html=True
         )
 
-    # Sidebar delete button (centered visually, Streamlit logic)
-    st.sidebar.markdown('<div style="display:flex; justify-content:center; align-items:center; margin-top:20px;">', unsafe_allow_html=True)
-    delete_btn_html = f"""
-        <style>
-        .wide-delete-btn {{
-            width: 90%;
-            background: #e53e3e;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 0;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 0 auto;
-            display: block;
-        }}
-        </style>
-       
-    """
-    delete_btn_container = st.sidebar.markdown(delete_btn_html, unsafe_allow_html=True)
-    # Fallback: also keep the Streamlit button for actual logic
-    delete_clicked = st.sidebar.button(f'Delete chats on "{selected_date}"', key=f'delete_{selected_date}')
-    st.sidebar.markdown('</div>', unsafe_allow_html=True)
-    if delete_clicked:
-        # Delete only chats for selected date for the user
-        supabase.table(TABLE_NAME).delete().eq("username", username).eq("date", selected_date).execute()
-        st.session_state["selected_date"] = None
-        st.rerun()
+        # Download button (no glow)
+        with col2:
+            if "download_clicked" not in st.session_state:
+                st.session_state.download_clicked = False
+            
+            st.markdown("""
+                <style>
+                .stDownloadButton > button {
+                    background-color: #28a745 !important;
+                    color: white !important;
+                    width: 100%;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+            download_button = st.download_button(
+                label="Download Chat History",
+                data=chat_text,
+                file_name=f"chat_{username}_{selected_date}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+            
+            if download_button:
+                st.session_state.download_clicked = True
+                st.sidebar.success("Chat history downloaded successfully!")
+
+        st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+        # Inject CSS for delete button font size
+        st.sidebar.markdown(
+            """
+            <style>
+            .stButton > button {
+                font-size: 1.25rem !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        with col2:
+            delete_clicked = st.button(
+                f'Delete chats on {selected_date}',
+                key=f'delete_{selected_date}',
+                type="primary",
+                use_container_width=True
+            )
+
+        if delete_clicked:
+            supabase.table(TABLE_NAME).delete().eq("username", username).eq("date", selected_date).execute()
+            st.sidebar.success(f"Chats for {selected_date} deleted successfully!")
+            st.session_state["selected_date"] = None
+            # Add a delay of 2 seconds before rerunning
+            import time
+            time.sleep(2)
+            st.rerun()
