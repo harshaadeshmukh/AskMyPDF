@@ -1,76 +1,65 @@
 import os
-import json
 from datetime import datetime
 import streamlit as st
-import asyncio
-import nest_asyncio
 import base64
+from supabase import create_client, Client
 
+# Supabase credentials
+from config import SUPABASE_URL, SUPABASE_KEY
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def get_history_file(username):
-    safe_name = "_".join(username.strip().split()).lower()
-    return os.path.join("history_json", f"chat_history_{safe_name}.json")
-
-# Fix asyncio loop issue for Streamlit
-try:
-    asyncio.get_running_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-nest_asyncio.apply()
+# Table name in Supabase
+TABLE_NAME = "chat_history"
 
 # -----------------------------
-# History storage functions
+# Supabase History storage functions
 # -----------------------------
-
-
-def load_history(username):
-    HISTORY_FILE = get_history_file(username)
-    if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-
-def save_history(history, username):
-    HISTORY_FILE = get_history_file(username)
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-
 
 def add_chat(question, answer, model, timestamp, pdfs, username):
-    """Add a single chat entry for today's date"""
+    """Add a single chat entry for today's date to Supabase"""
     today = datetime.now().strftime('%Y-%m-%d')
-    history = load_history(username)
-    if today not in history:
-        history[today] = []
-    chat = {
+    data = {
+        "username": username,
         "question": question,
         "answer": answer,
         "model": model,
         "timestamp": timestamp,
-        "pdfs": pdfs
+        "pdfs": str(pdfs),
+        "date": today
     }
-    history[today].append(chat)
-    save_history(history, username)
-
+    supabase.table(TABLE_NAME).insert(data).execute()
 
 def get_all_history(username):
-    return load_history(username)
-
+    """Fetch all chat history for a user from Supabase, grouped by date"""
+    response = supabase.table(TABLE_NAME).select("*").eq("username", username).execute()
+    items = response.data if response.data else []
+    history = {}
+    for item in items:
+        date = item.get("date")
+        chat = {
+            "question": item.get("question"),
+            "answer": item.get("answer"),
+            "model": item.get("model"),
+            "timestamp": item.get("timestamp"),
+            "pdfs": item.get("pdfs")
+        }
+        if date not in history:
+            history[date] = []
+        history[date].append(chat)
+    return history
 
 def clear_history(username):
-    HISTORY_FILE = get_history_file(username)
-    if os.path.exists(HISTORY_FILE):
-        os.remove(HISTORY_FILE)
+    """Delete all chat history for a user from Supabase"""
+    supabase.table(TABLE_NAME).delete().eq("username", username).execute()
+
+
+
 
 # -----------------------------
 # Streamlit UI
 # -----------------------------
 
-
 def show_history_ui(username):
-
     st.title("🕑 Chat History Browser")
     history = get_all_history(username)
     if not history:
@@ -115,15 +104,31 @@ def show_history_ui(username):
         )
 
     # Sidebar delete button (centered visually, Streamlit logic)
-    st.sidebar.markdown('<div style="text-align:center; margin-top:20px;  border-radius:7px; padding:4px;">', unsafe_allow_html=True)
-    delete_clicked = st.sidebar.button(f'Delete chat on "{selected_date}"', key=f'delete_{selected_date}')
+    st.sidebar.markdown('<div style="display:flex; justify-content:center; align-items:center; margin-top:20px;">', unsafe_allow_html=True)
+    delete_btn_html = f"""
+        <style>
+        .wide-delete-btn {{
+            width: 90%;
+            background: #e53e3e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+        }}
+        </style>
+       
+    """
+    delete_btn_container = st.sidebar.markdown(delete_btn_html, unsafe_allow_html=True)
+    # Fallback: also keep the Streamlit button for actual logic
+    delete_clicked = st.sidebar.button(f'Delete chats on "{selected_date}"', key=f'delete_{selected_date}')
     st.sidebar.markdown('</div>', unsafe_allow_html=True)
     if delete_clicked:
-        history.pop(selected_date, None)
-        save_history(history, username)
-        dates = sorted(history.keys(), key=lambda d: datetime.strptime(d, "%Y-%m-%d")) if history else []
-        if dates:
-            st.session_state["selected_date"] = dates[-1]
-        else:
-            st.session_state["selected_date"] = None
+        # Delete only chats for selected date for the user
+        supabase.table(TABLE_NAME).delete().eq("username", username).eq("date", selected_date).execute()
+        st.session_state["selected_date"] = None
         st.rerun()
