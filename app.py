@@ -16,6 +16,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 
 from history import add_chat  # Add this import at the top
+from output_behavioural import get_persona_prompt  # Import the persona prompt function
 
 # ---------------- Setup asyncio for Streamlit ----------------
 try:
@@ -109,20 +110,11 @@ def get_vector_store(chunks):
     return vector_store
 
 def get_conversational_chain(api_key):
-    prompt_template = """
-💬 Hi there! Please help answer the user's question as clearly and thoroughly as possible using only the information in the context below.  
-📌 If the answer is not in the context, just say "🙁 I'm afraid I don't have that info in the provided context."  
-❌ Do not guess or make up answers.  
-
-📄 Context:
-{context}
-
-❓ Question:
-{question}
-
-💡 Answer:
-Please explain in a friendly and easy-to-understand way. You can also add tips or examples if it helps the user understand better. Thank you! 🙏
-"""
+    # Get current persona from session state (default if not set)
+    current_persona = st.session_state.get('persona', 'default')
+    
+    # Get the appropriate prompt template for the current persona
+    prompt_template = get_persona_prompt(current_persona)
 
     model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=api_key)
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
@@ -214,6 +206,33 @@ def user_input(user_question, pdf_docs, conversation_history, api_key, username)
 # ---------------- Run Chatbot Page ----------------
 def run_chatbot(username):
     st.header("📚 Chat with multiple PDFs")
+    
+    # Add persona selection using selectbox
+    personas = {
+        "default": "🤖 AI Assistant - I'll be friendly and clear in my explanations",
+        "lawyer": "⚖️ Legal Advisor - I'll analyze with precision and cite relevant details",
+        "teacher": "👩‍🏫 Educator - I'll break down concepts with helpful examples",
+        "researcher": "🔬 Academic Expert - I'll provide detailed analysis with methodical insights",
+        "student": "👨‍🎓 Study Buddy - I'll keep things simple and easy to understand"
+    }
+    
+    # Initialize persona in session state if not present
+    if 'persona' not in st.session_state:
+        st.session_state.persona = 'default'
+    
+    # Add persona selection dropdown
+    selected_persona = st.selectbox(
+        label="",
+        options=list(personas.keys()),
+        format_func=lambda x: personas[x],
+        label_visibility="collapsed"
+    )
+        
+    # Update session state when selection changes
+    if selected_persona != st.session_state.persona:
+        st.session_state.persona = selected_persona
+    
+    st.markdown("---")
 
     # Always keep chat history tied to username
     if 'conversation_history' not in st.session_state or st.session_state.get('chat_user') != username:
