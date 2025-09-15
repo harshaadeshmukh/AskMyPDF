@@ -27,7 +27,6 @@ AskMyPDF is a simple app that lets you talk to your PDF files. Just upload one o
 | **FAISS**              | Vector database used to efficiently store and search embeddings across multiple PDFs. |
 | **Google Gemini 2.5 Flash** | The LLM backend that generates accurate, context-aware answers quickly. |
 | **Supabase**                | Cloud database for storing chat history, enabling multi-user support and persistent conversations. |
-| **output_behavioural.py** | Defines persona-based prompt templates for tailored answer styles. |
 
 ---
 
