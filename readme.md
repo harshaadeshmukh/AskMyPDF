@@ -12,17 +12,8 @@ AskMyPDF is a simple app that lets you talk to your PDF files. Just upload one o
 - ⚡ **Interactive UI** – Built with Streamlit for a clean and user-friendly interface.  
 - 🔧 **Customizable Configuration** – API keys, chunk sizes, and embedding settings are configurable via config.py.  
 - 🛠️ **Lightweight & Extensible** – Simple structure so you can easily adapt it for personal or professional projects.  
-- 🗄️ **Chat History Storage with Supabase** – All chat history is stored securely in Supabase, allowing for persistent, cloud-based access and management.
-
----
-
-## 🚀 Features
-- 📂 **PDF Upload & Processing** – Upload single or multiple PDF files and instantly process them for search and QA.  
-- 🔎 **Semantic Search with FAISS** – Uses FAISS as a vector database for efficient and accurate document similarity search.  
-- 🤖 **Conversational Q&A with Gemini 2.5 Flash** – Get natural language answers powered by Google’s Gemini AI model.  
-- ⚡ **Interactive UI** – Built with Streamlit for a clean and user-friendly interface.  
-- � **Customizable Configuration** – API keys, chunk sizes, and embedding settings are configurable via config.py.  
-- 🛠️ **Lightweight & Extensible** – Simple structure so you can easily adapt it for personal or professional projects.  
+- 🗄️ **Chat History Storage with Supabase** – All chat history is stored securely in Supabase, allowing for persistent, cloud-based     access and management.
+- �‍🎤 **Persona-based Output** – Use `output_behavioural.py` to customize answer style (e.g., lawyer, teacher, researcher, student) for more relevant and engaging responses.
 
 ---
 
@@ -36,6 +27,7 @@ AskMyPDF is a simple app that lets you talk to your PDF files. Just upload one o
 | **FAISS**              | Vector database used to efficiently store and search embeddings across multiple PDFs. |
 | **Google Gemini 2.5 Flash** | The LLM backend that generates accurate, context-aware answers quickly. |
 | **Supabase**                | Cloud database for storing chat history, enabling multi-user support and persistent conversations. |
+| **output_behavioural.py** | Defines persona-based prompt templates for tailored answer styles. |
 
 ---
 
@@ -107,15 +99,18 @@ streamlit run home.py
 ## 📂 Directory Structure
 ```
 AskMyPDF/
+AskMyPDF/
 │
 ├── home.py           # Website landing page (opens first when you visit)
 ├── app.py            # Chatbot app (upload PDFs, ask questions, get answers)
-├── config.py         # Stores API keys,Supabase credentials for chat history
+├── config.py         # Stores API keys, Supabase credentials for chat history
+├── output_behavioural.py   # Persona-based prompt templates for answer customization
 ├── requirements.txt  # List of Python dependencies
 └── assets/           # Folder for images, diagrams, and other static resources
     └── rag_flow.png  # RAG architecture diagram
     └── demo.gif      # Demo video of the chatbot
 ```
+
 ---
 
 ## 🎯 Use Cases
