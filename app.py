@@ -135,7 +135,6 @@ def user_input(user_question, pdf_docs, conversation_history, api_key, username)
     should_handle, special_response = handle_special_keywords(user_question, conversation_history)
     if should_handle:
         conversation_history.append((user_question, special_response, "Assistant", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ""))
-        # Save to persistent history file
         add_chat(
             user_question, special_response, "Assistant",
             datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -146,14 +145,6 @@ def user_input(user_question, pdf_docs, conversation_history, api_key, username)
             st.markdown(user_question)
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(special_response)
-        # Always show download button for any special response
-        if len(conversation_history) > 0:
-            text_history = ""
-            for q, a, model, ts, pdf in conversation_history:
-                text_history += f"Question: {q}\nAnswer: {a}\nModel: {model}\nTimestamp: {ts}\nPDFs: {pdf}\n{'-'*50}\n"
-            b64 = base64.b64encode(text_history.encode()).decode()
-            st.sidebar.markdown(f'<a href="data:file/txt;base64,{b64}" download="conversation_history.txt">'
-                                f'<button style="background-color:#888; color:#fff; border:none; padding:8px 16px; border-radius:5px; cursor:pointer; font-size:16px;">Download conversation history</button></a>', unsafe_allow_html=True)
         return
 
     # ---------------- Check API key ----------------
@@ -212,16 +203,6 @@ def user_input(user_question, pdf_docs, conversation_history, api_key, username)
             st.markdown(user_question_output)
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(response_output)
-
-        # Download history as text file
-        if len(conversation_history) > 0:
-            text_history = ""
-            for q, a, model, ts, pdf in conversation_history:
-                text_history += f"Question: {q}\nAnswer: {a}\nModel: {model}\nTimestamp: {ts}\nPDFs: {pdf}\n{'-'*50}\n"
-
-            b64 = base64.b64encode(text_history.encode()).decode()
-            st.sidebar.markdown(f'<a href="data:file/txt;base64,{b64}" download="conversation_history.txt">'
-                                f'<button style="background-color:#888; color:#fff; border:none; padding:8px 16px; border-radius:5px; cursor:pointer; font-size:16px;">Download conversation history</button></a>', unsafe_allow_html=True)
 
     except Exception as e:
         if "API_KEY" in str(e).upper() or "AUTHENTICATION" in str(e).upper():
