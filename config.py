@@ -1,2 +1,3 @@
-
 GOOGLE_API_KEY = "AIzaSyB3mH0C4fMkZWGCzU5FBca9mwS8_B0dBTk"
+SUPABASE_URL = "https://nqnpczydxmzchriqiftp.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xbnBjenlkeG16Y2hyaXFpZnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzM4NTksImV4cCI6MjA3MzUwOTg1OX0.HPlbVDAFtM1gWp1_ptqawY9j4Rqj4ddcrakKlnBq4eA"
