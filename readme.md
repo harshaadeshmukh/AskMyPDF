@@ -13,7 +13,7 @@ AskMyPDF is a simple app that lets you talk to your PDF files. Just upload one o
 - 🔧 **Customizable Configuration** – API keys, chunk sizes, and embedding settings are configurable via config.py.  
 - 🛠️ **Lightweight & Extensible** – Simple structure so you can easily adapt it for personal or professional projects.  
 - 🗄️ **Chat History Storage with Supabase** – All chat history is stored securely in Supabase, allowing for persistent, cloud-based     access and management.
-- �‍🎤 **Persona-based Output** – Use `output_behavioural.py` to customize answer style (e.g., lawyer, teacher, researcher, student) for more relevant and engaging responses.
+- 🎤 **Persona-based Output** – Use `output_behavioural.py` to customize answer style (e.g., lawyer, teacher, researcher, student) for more relevant and engaging responses.
 
 ---
 
