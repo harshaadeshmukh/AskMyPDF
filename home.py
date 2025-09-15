@@ -4,7 +4,6 @@ import app  # your chatbot page
 import history
 
 
-st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
 # Inject global responsive font CSS
 st.markdown("""
     <style>
@@ -148,13 +147,31 @@ pages = {
     "History": "History"
 }
 
+# Add custom CSS for glowing effect
+st.sidebar.markdown("""
+    <style>
+    .glow-btn {
+        border-radius: 8px !important;
+        border: 2px solid #6366f1 !important;
+        background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%) !important;
+        color: #fff !important;
+        font-weight: 700;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 for page, name in pages.items():
-    if st.sidebar.button(
-        page,
-        key=page,
-        use_container_width=True
-    ):
-        st.session_state.page = page
+    is_active = st.session_state.page == page
+    if is_active:
+        st.sidebar.markdown(f"""
+            <div style='margin-bottom:8px;'>
+                <button class='glow-btn' style='width:100%;padding:8px 0;font-size:1.1rem;cursor:pointer;' disabled>{page}</button>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        if st.sidebar.button(page, key=page, use_container_width=True):
+            st.session_state.page = page
+            st.rerun()
 
 # Logout button after History
 if st.sidebar.button("Logout", key="logout_btn", use_container_width=True):
