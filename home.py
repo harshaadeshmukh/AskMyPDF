@@ -4,6 +4,7 @@ import app  # your chatbot page
 import history
 
 
+st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
 # Inject global responsive font CSS
 st.markdown("""
     <style>
