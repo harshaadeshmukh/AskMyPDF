@@ -93,16 +93,14 @@ pip install -r requirements.txt
 ```
 
 
-### 4. Add your Gemini API key in config.py.
+### 4. Add your Gemini API key in config.py and Add your Supabase credentials 
 
-### 5. Add your Supabase credentials in supabase_config.py.
-
-### 6. Run the app:
+### 5. Run the app:
 ```bash
 streamlit run home.py
 ```
 
-### 7. Upload a PDF (or multiple PDFs) and start asking questions!
+### 6. Upload a PDF (or multiple PDFs) and start asking questions!
 
 ---
 
