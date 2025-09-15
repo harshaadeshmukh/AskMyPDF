@@ -60,7 +60,9 @@ def clear_history(username):
 # -----------------------------
 
 def show_history_ui(username):
-    st.title("🕑 Chat History Browser")
+    st.markdown("""
+        <h2 style='font-size:2.3rem; font-weight:700; margin-bottom:0.5rem;'>Chat Record 💬📝</h2>
+    """, unsafe_allow_html=True)
     history = get_all_history(username)
     if not history:
         st.info("No chat history found.")
@@ -98,8 +100,7 @@ def show_history_ui(username):
         st.sidebar.markdown(
             f'<div style="text-align:center;">'
             f'<a href="data:file/txt;base64,{b64}" download="chat_{username}_{selected_date}.txt">'
-                f'<button style="background-color:#888; background-color:green;margin-top :20px;border:none; padding:8px 16px; border-radius:7px; cursor:pointer; font-size:16px;margin-bottom:1px;">Chat Records💬📑
-</button></a>'
+                f'<button style="background-color:#888; background-color:green;margin-top :20px;border:none; padding:8px 16px; border-radius:7px; cursor:pointer; font-size:16px;margin-bottom:1px;">Download Chat History</button></a>'
             f'</div>',
             unsafe_allow_html=True
         )
