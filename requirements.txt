@@ -12,4 +12,3 @@ huggingface-hub
 nest_asyncio
 google-generativeai
 langchain-google-genai
-supabase-py
