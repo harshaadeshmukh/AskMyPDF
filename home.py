@@ -3,6 +3,7 @@ import streamlit as st
 import app  # your chatbot page
 import history
 
+
 st.set_page_config(page_title="AskMyPDF", page_icon="📚", layout="wide")
 # Inject global responsive font CSS
 st.markdown("""
@@ -256,3 +257,4 @@ elif st.session_state.page == "Chatbot":
     
 elif st.session_state.page == "History":
     history.show_history_ui(st.session_state.username)
+    
