@@ -8,12 +8,13 @@ from datetime import datetime
 import config
 import random
 # LangChain imports
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains.question_answering import load_qa_chain
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 
 from history import add_chat  # Add this import at the top
 from output_behavioural import get_persona_prompt  # Import the persona prompt function
@@ -118,7 +119,17 @@ def get_conversational_chain(api_key):
 
     model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=api_key)
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
-    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
+    
+    # Create chain using LCEL (Langchain Expression Language)
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+    
+    chain = (
+        {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
+        | prompt
+        | model
+        | StrOutputParser()
+    )
     return chain
 
 
@@ -174,10 +185,16 @@ def user_input(user_question, pdf_docs, conversation_history, api_key, username)
 
         # Gemini LLM
         chain = get_conversational_chain(api_key)
-        response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-
+        
+        # Format context from documents
+        context = "\n\n".join([doc.page_content for doc in docs])
+        
+        # Run the chain with context and question
+        response_output = chain.invoke({
+            "context": context,
+            "question": user_question
+        })
         user_question_output = user_question
-        response_output = response['output_text']
         pdf_names = [pdf.name for pdf in pdf_docs] if pdf_docs else []
 
         # Save history (session)
