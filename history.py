@@ -27,30 +27,43 @@ def add_chat(question, answer, model, timestamp, pdfs, username):
         "pdfs": str(pdfs),
         "date": today
     }
-    supabase.table(TABLE_NAME).insert(data).execute()
+    try:
+        supabase.table(TABLE_NAME).insert(data).execute()
+    except Exception as e:
+        # Log error but don't crash the app
+        print(f"⚠️ Warning: Could not save to Supabase: {str(e)}")
+        # Silently continue - the chat still works, just not saved to database
 
 def get_all_history(username):
     """Fetch all chat history for a user from Supabase, grouped by date"""
-    response = supabase.table(TABLE_NAME).select("*").eq("username", username).execute()
-    items = response.data if response.data else []
-    history = {}
-    for item in items:
-        date = item.get("date")
-        chat = {
-            "question": item.get("question"),
-            "answer": item.get("answer"),
-            "model": item.get("model"),
-            "timestamp": item.get("timestamp"),
-            "pdfs": item.get("pdfs")
-        }
-        if date not in history:
-            history[date] = []
-        history[date].append(chat)
-    return history
+    try:
+        response = supabase.table(TABLE_NAME).select("*").eq("username", username).execute()
+        items = response.data if response.data else []
+        history = {}
+        for item in items:
+            date = item.get("date")
+            chat = {
+                "question": item.get("question"),
+                "answer": item.get("answer"),
+                "model": item.get("model"),
+                "timestamp": item.get("timestamp"),
+                "pdfs": item.get("pdfs")
+            }
+            if date not in history:
+                history[date] = []
+            history[date].append(chat)
+        return history
+    except Exception as e:
+        # Return empty history if connection fails
+        print(f"⚠️ Warning: Could not fetch history from Supabase: {str(e)}")
+        return {}
 
 def clear_history(username):
     """Delete all chat history for a user from Supabase"""
-    supabase.table(TABLE_NAME).delete().eq("username", username).execute()
+    try:
+        supabase.table(TABLE_NAME).delete().eq("username", username).execute()
+    except Exception as e:
+        print(f"⚠️ Warning: Could not clear history from Supabase: {str(e)}")
 
 
 # -----------------------------
