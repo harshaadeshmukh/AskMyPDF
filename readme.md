@@ -17,7 +17,7 @@ AskMyPDF is a simple app that lets you talk to your PDF files. Just upload one o
 
 ---
 
-##🛠️ Tech Stack
+## 🛠️ Tech Stack
 | Technology            | Why it’s used |
 |------------------------|------------------------------------------------------------------|
 | **Python**             | Core language for building the app, chosen for its simplicity and rich AI ecosystem. |
