@@ -1,6 +1,6 @@
-# AskMyPDF-anything
+# AskMyPDF
 
-AskMyPDF-anything is a simple app that lets you talk to your PDF files. 
+AskMyPDF is a simple app that lets you talk to your PDF files. 
 Just upload one or more PDFs, ask a question in plain English, and the app will give you the answer. 
 It works by reading the content of your PDFs, finding the most relevant parts, and then using Google Gemini 2.5 Flash AI to generate accurate answers. 
 No more scrolling through hundreds of pages – just ask and get what you need!
@@ -8,12 +8,8 @@ No more scrolling through hundreds of pages – just ask and get what you need!
 ---
 
 ## 🚀 Features
-- 📂 **PDF Upload & Processing** – Upload single or multiple PDF files and instantly process them for search and QA.  
-- 🔎 **Semantic Search with FAISS** – Uses FAISS as a vector database for efficient and accurate document similarity search.  
-- 🤖 **Conversational Q&A with Gemini 2.5 Flash** – Get natural language answers powered by Google’s Gemini AI model.  
-- ⚡ **Interactive UI** – Built with Streamlit for a clean and user-friendly interface.  
-- 🔧 **Customizable Configuration** – API keys, chunk sizes, and embedding settings are configurable via config.py.  
-- 🛠️ **Lightweight & Extensible** – Simple structure so you can easily adapt it for personal or professional projects.  
+ - �️ **Chat History Storage with Supabase** – All chat history is stored securely in Supabase, allowing for persistent, cloud-based access and management.  
+ - �‍🎤 **Persona-based Output** – Use `output_behavioural.py` to customize answer style (e.g., lawyer, teacher, researcher, student) for more relevant and engaging responses.
 
 ---
 
@@ -26,11 +22,13 @@ No more scrolling through hundreds of pages – just ask and get what you need!
 | **PyPDF / pdfplumber** | Extracts text from PDF files, ensuring even scanned/complex documents can be parsed. |
 | **FAISS**              | Vector database used to efficiently store and search embeddings across multiple PDFs. |
 | **Google Gemini 2.5 Flash** | The LLM backend that generates accurate, context-aware answers quickly. |
+ | **Supabase**           | Cloud database for storing chat history, enabling multi-user support and persistent conversations. |
+ | **output_behavioural.py** | Defines persona-based prompt templates for tailored answer styles. |
 
 ---
 
 ## ⚙️ How it Works (RAG Pipeline)
-AskMyPDF-anything uses a **Retrieval-Augmented Generation (RAG)** approach:
+AskMyPDF uses a **Retrieval-Augmented Generation (RAG)** approach:
 
 1. **PDF Ingestion** – Extract text from PDFs and split into smaller chunks.  
 2. **Embeddings** – Convert text chunks into numerical vectors using HuggingFace `all-MiniLM-L6-v2`.  
@@ -53,7 +51,7 @@ AskMyPDF-anything uses a **Retrieval-Augmented Generation (RAG)** approach:
 ---
 
 ## 🎥 Demo
-Here’s a quick demo of AskMyPDF-anything in action:
+Here’s a quick demo of AskMyPDF in action:
 
 <p align="center">
   <img src="assets/demo.gif" alt="demo" width="650"/>
@@ -65,8 +63,8 @@ Here’s a quick demo of AskMyPDF-anything in action:
 ## 🚦 Getting Started
 ### 1. Clone the Repository
 ```bash
-   git clone https://github.com/harshaadeshmukh/AskMyPDF-anything.git
-   cd AskMyPDF-anything
+   git clone https://github.com/harshaadeshmukh/AskMyPDF.git
+   cd AskMyPDF
 ```
 
 ### 2. Set Up the Environment:
@@ -93,11 +91,12 @@ streamlit run home.py
 
 ## 📂 Directory Structure
 ```
-AskMyPDF-anything/
+AskMyPDF/
 │
 ├── home.py           # Website landing page (opens first when you visit)
 ├── app.py            # Chatbot app (upload PDFs, ask questions, get answers)
-├── config.py         # Stores API keys and configuration settings
+ ├── config.py         # Stores API keys, Supabase credentials for chat history
+ ├── output_behavioural.py   # Persona-based prompt templates for answer customization
 ├── requirements.txt  # List of Python dependencies
 └── assets/           # Folder for images, diagrams, and other static resources
     └── rag_flow.png  # RAG architecture diagram
@@ -114,4 +113,4 @@ AskMyPDF-anything/
 
 📊 Data Analysts – Get fast answers from documentation, guidelines, or case studies.  
 
-📚 General Readers – Turn any long PDF into an interactive knowledge assistant.  
+📚 General Readers – Turn any long PDF into an interactive knowledge assistant.
